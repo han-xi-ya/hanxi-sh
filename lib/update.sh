@@ -162,11 +162,14 @@ update_all_modules() {
         [[ "$line" =~ ^# ]] && continue
         [[ -z "$line" ]] && continue
         [[ "$line" =~ ^MODULES ]] && continue
-        [[ "$line" =~ ^[[:space:]]*"[^:]+:[^:]+:[^:]+:[^:]+"[[:space:]]*$ ]] || continue
+        [[ "$line" =~ ^[[:space:]]*\) ]] && continue
         
-        # 清理引号和空格
-        local clean_line=$(echo "$line" | sed 's/^[[:space:]]*"//' | sed 's/"[[:space:]]*$//')
-        remote_modules+=("$clean_line")
+        # 检查是否是有效的模块格式（包含至少一个冒号）
+        if [[ "$line" =~ : ]]; then
+            # 清理引号和空格
+            local clean_line=$(echo "$line" | sed 's/^[[:space:]]*"//' | sed 's/"[[:space:]]*$//')
+            remote_modules+=("$clean_line")
+        fi
     done <<< "$remote_modules_list"
     
     if [ ${#remote_modules[@]} -eq 0 ]; then
