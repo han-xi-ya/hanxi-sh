@@ -341,7 +341,6 @@ main() {
     # 检查root权限
     if [ "$(id -u)" -ne 0 ]; then
         echo_color $YELLOW "提示: 部分功能可能需要root权限才能正常运行"
-        sleep 1
     fi
     
     # 检查必要工具
@@ -353,7 +352,6 @@ main() {
     
     if ! check_command python3; then
         echo_color $YELLOW "警告: 未安装python3，部分功能可能受限"
-        sleep 1
     fi
     
     # 执行系统信息查询
