@@ -32,8 +32,8 @@ check_command() {
 system_info_query() {
     # 获取公网IP和内网IP
     ip_address() {
-        ipv4_address=$(curl -s4 --connect-timeout 1 --max-time 2 ip.sb 2>/dev/null || curl -s4 --connect-timeout 1 --max-time 2 icanhazip.com 2>/dev/null || echo "无法获取")
-        ipv6_address=$(curl -s6 --connect-timeout 1 --max-time 2 ip.sb 2>/dev/null || curl -s6 --connect-timeout 1 --max-time 2 icanhazip.com 2>/dev/null || echo "无法获取")
+        ipv4_address=$(timeout 0.5 curl -s4 ip.sb 2>/dev/null || timeout 0.5 curl -s4 icanhazip.com 2>/dev/null || echo "无法获取")
+        ipv6_address=$(timeout 0.5 curl -s6 ip.sb 2>/dev/null || timeout 0.5 curl -s6 icanhazip.com 2>/dev/null || echo "无法获取")
         local_ipv4=$(ip addr | grep -E 'inet (192\.168|10\.|172\.)' | grep -v 127.0.0.1 | head -n1 | awk '{print $2}' | cut -d'/' -f1)
         local_ipv6=$(ip addr | grep inet6 | grep -v ::1/128 | head -n1 | awk '{print $2}' | cut -d'/' -f1)
     }
@@ -41,7 +41,8 @@ system_info_query() {
     # 获取运营商信息
     get_isp_info() {
         if [ "$ipv4_address" != "无法获取" ]; then
-            isp_info=$(curl -s --connect-timeout 1 --max-time 2 "http://ip-api.com/json/$ipv4_address?fields=isp,org" | \
+            # 使用更快的超时设置，优先使用本地命令获取
+            isp_info=$(timeout 0.5 curl -s "http://ip-api.com/json/$ipv4_address?fields=isp,org" 2>/dev/null | \
                 python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('isp', '未知'), data.get('org', ''))" 2>/dev/null || \
                 echo "未知运营商")
         else
@@ -52,7 +53,8 @@ system_info_query() {
     # 获取地理位置
     get_geo_info() {
         if [ "$ipv4_address" != "无法获取" ]; then
-            geo_info=$(curl -s --connect-timeout 1 --max-time 2 "http://ip-api.com/json/$ipv4_address?fields=country,regionName,city" | \
+            # 使用更快的超时设置
+            geo_info=$(timeout 0.5 curl -s "http://ip-api.com/json/$ipv4_address?fields=country,regionName,city" 2>/dev/null | \
                 python3 -c "import json,sys; data=json.load(sys.stdin); print(f\"{data.get('country', '')} {data.get('regionName', '')} {data.get('city', '')}\")" 2>/dev/null || \
                 echo "未知位置")
         else
@@ -71,8 +73,8 @@ system_info_query() {
         cpu_info=$(lscpu | awk -F': +' '/Model name:/ {print $2; exit}')
         cpu_cores=$(nproc)
         cpu_freq=$(cat /proc/cpuinfo | grep "MHz" | head -n1 | awk '{printf "%.2f GHz\n", $4/1000}')
-        cpu_usage=$(awk '{u=$2+$4; t=$2+$4+$5; if (NR==1){u1=u; t1=t;} else printf "%.0f\n", (($2+$4-u1) * 100 / (t-t1))}' \
-            <(grep 'cpu ' /proc/stat) <(sleep 0.5; grep 'cpu ' /proc/stat))
+        # 使用更快的CPU使用率计算方法（基于/proc/stat的瞬时值）
+        cpu_usage=$(awk '/cpu / {idle=$5; total=0; for(i=2;i<=NF;i++) total+=$i; printf "%.0f\n", (total-idle)*100/total}' /proc/stat)
     }
 
     # 获取内存信息
