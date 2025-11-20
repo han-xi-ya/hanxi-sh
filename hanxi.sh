@@ -92,6 +92,11 @@ show_main_menu() {
     
     local i=1
     for module in "${MODULES[@]}"; do
+        # 跳过配置行和空行
+        if [[ "$module" =~ ^MODULES=\($ ]] || [[ "$module" =~ ^\)$ ]] || [[ -z "$module" ]]; then
+            continue
+        fi
+        
         # 正确解析模块配置：模块文件名:显示名称:描述:版本号
         IFS=':' read -r module_file module_name module_desc module_version <<< "$module"
         echo_color $BLUE "$i. $module_name"

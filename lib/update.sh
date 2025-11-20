@@ -37,17 +37,22 @@ check_updates() {
     echo_color $BLUE "正在检查更新..."
     
     # 获取远程版本信息
-    local remote_version=$(curl -s "$REMOTE_VERSION_URL" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"')
-    local remote_config_version=$(curl -s "$REMOTE_VERSION_URL" | grep "CONFIG_VERSION" | cut -d'=' -f2 | tr -d '"')
+    local remote_version=$(curl -s "$REMOTE_VERSION_URL" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
+    local remote_config_version=$(curl -s "$REMOTE_VERSION_URL" | grep "CONFIG_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
     
     if [ -z "$remote_version" ]; then
         echo_color $RED "无法获取远程版本信息"
+        echo_color $YELLOW "使用本地版本: $TOOL_VERSION"
         return 1
     fi
     
+    # 清理版本号中的空格
+    local clean_remote_version=$(echo "$remote_version" | tr -d ' ')
+    local clean_local_version=$(echo "$TOOL_VERSION" | tr -d ' ')
+    
     # 比较版本
-    if [ "$TOOL_VERSION" != "$remote_version" ]; then
-        echo_color $YELLOW "发现新版本: $remote_version (当前: $TOOL_VERSION)"
+    if [ "$clean_local_version" != "$clean_remote_version" ]; then
+        echo_color $YELLOW "发现新版本: $clean_remote_version (当前: $clean_local_version)"
         read -e -p "是否更新? (y/N): " choice
         if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
             update_tool
