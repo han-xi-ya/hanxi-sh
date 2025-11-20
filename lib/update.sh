@@ -154,7 +154,7 @@ update_all_modules() {
     echo "# 模块配置文件" > "$CONFIG_DIR/modules.list"
     echo "# 格式: 模块文件名:显示名称:描述:版本号" >> "$CONFIG_DIR/modules.list"
     echo >> "$CONFIG_DIR/modules.list"
-    echo "declare -a MODULES=(" >> "$CONFIG_DIR/modules.list"
+    echo "MODULES=(" >> "$CONFIG_DIR/modules.list"
     for module in "${remote_modules[@]}"; do
         echo "    \"$module\"" >> "$CONFIG_DIR/modules.list"
     done
