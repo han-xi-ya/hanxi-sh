@@ -58,7 +58,7 @@ chmod +x modules/*.sh
 chmod +x lib/*.sh
 
 # 修改配置文件中的远程仓库URL
-    sed -i "s|REPO_BASE_URL=\"https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main\"|REPO_BASE_URL=\"$BASE_URL\"|" config/version.conf
+sed -i "s|REPO_BASE_URL=\"https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main\"|REPO_BASE_URL=\"$BASE_URL\"|" config/version.conf
 
 echo "安装完成!"
 echo "运行方式: ./hanxi-sh/hanxi.sh"
