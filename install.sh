@@ -12,23 +12,23 @@ read -p "输入选项 (1-3): " source_choice
 # 设置基础URL
 case $source_choice in
     1)
-        read -p "请输入自定义域名 (例如: https://your-domain.com/system_manager): " BASE_URL
+        read -p "请输入自定义域名 (例如: https://your-domain.com/hanxi-sh): " BASE_URL
         ;;
     2)
-        BASE_URL="https://raw.githubusercontent.com/your_username/system_manager/main"
+        BASE_URL="https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main"
         ;;
     3)
-        BASE_URL="https://gitee.com/your_username/system_manager/raw/main"
+        BASE_URL="https://gitee.com/han-xi-ya/hanxi-sh/raw/main"
         ;;
     *)
-        echo "无效选项，默认使用GitHub"
-        BASE_URL="https://raw.githubusercontent.com/your_username/system_manager/main"
+        echo "无效选项，默认使用Gitee"
+        BASE_URL="https://gitee.com/han-xi-ya/hanxi-sh/raw/main"
         ;;
 esac
 
 echo "正在安装系统管理工具... (源: $BASE_URL)"
-mkdir -p system_manager
-cd system_manager
+mkdir -p hanxi-sh
+cd hanxi-sh
 
 # 创建目录结构
 mkdir -p config modules lib
@@ -58,7 +58,7 @@ chmod +x modules/*.sh
 chmod +x lib/*.sh
 
 # 修改配置文件中的远程仓库URL
-    sed -i "s|REPO_BASE_URL="https://raw.githubusercontent.com/your_username/system_manager/main"|REPO_BASE_URL="$BASE_URL"|" config/version.conf
+    sed -i "s|REPO_BASE_URL=\"https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main\"|REPO_BASE_URL=\"$BASE_URL\"|" config/version.conf
 
 echo "安装完成!"
-echo "运行方式: ./hanxi.sh"
+echo "运行方式: ./hanxi-sh/hanxi.sh"

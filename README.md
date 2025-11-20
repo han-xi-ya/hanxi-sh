@@ -17,23 +17,26 @@
 ### 一键安装
 
 ```bash
-curl -sL https://raw.githubusercontent.com/your_username/system_manager/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main/install.sh | bash
 ```
 
 ### 手动安装
 
 ```bash
-# 克隆项目
-git clone https://github.com/your_username/system_manager.git
+# 克隆项目（GitHub）
+git clone https://github.com/han-xi-ya/hanxi-sh.git
+
+# 克隆项目（Gitee）
+git clone https://gitee.com/han-xi-ya/hanxi-sh.git
 
 # 进入项目目录
-cd system_manager
+cd hanxi-sh
 
 # 赋予执行权限
-chmod +x system_manager.sh modules/*.sh lib/*.sh
+chmod +x hanxi.sh modules/*.sh lib/*.sh
 
 # 运行工具
-./system_manager.sh
+./hanxi.sh
 ```
 
 ## 使用说明
@@ -100,7 +103,7 @@ c. 清理缓存
 ## 命令行参数
 
 ```bash
-./system_manager.sh [选项]
+./hanxi.sh [选项]
 ```
 
 ### 选项
@@ -207,6 +210,6 @@ MIT License
 
 ## 联系方式
 
-- 项目主页: https://github.com/your_username/system_manager
+- 项目主页: https://github.com/han-xi-ya/hanxi-sh
 - 作者: your_username
 - 邮箱: your_email@example.com

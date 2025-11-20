@@ -12,13 +12,13 @@ download_source="${download_source:-github}"
 if [ -z "$REPO_BASE_URL" ]; then
     case "$download_source" in
         github)
-            REPO_BASE_URL="https://raw.githubusercontent.com/your-username/your-repo/main"
+            REPO_BASE_URL="https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main"
             ;;
         custom)
-            REPO_BASE_URL="https://your.custom.domain/your-repo"
+            REPO_BASE_URL="https://your.custom.domain/hanxi-sh"
             ;;
         gitee)
-            REPO_BASE_URL="https://gitee.com/your-username/your-repo/raw/main"
+            REPO_BASE_URL="https://gitee.com/han-xi-ya/hanxi-sh/raw/main"
             ;;
         *)
             echo_color $RED "不支持的下载源: $download_source"

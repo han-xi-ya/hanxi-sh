@@ -247,5 +247,4 @@ main() {
 
 # 启动脚本
 trap cleanup EXIT
-process_args "$@"
 main

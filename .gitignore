@@ -1,2 +1,5 @@
 # 默认忽略的文件
 ./.idea
+/.idea/hanxi-sh.iml
+/.idea/modules.xml
+/.idea/vcs.xml
