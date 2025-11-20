@@ -6,7 +6,7 @@
 
 # 下载源支持: GitHub, Custom, Gitee
 # 如果REPO_BASE_URL未从配置文件或命令行设置，则使用默认源
-download_source="${download_source:-github}"
+download_source="${download_source:-gitee}"
 
 # 只有在REPO_BASE_URL未设置时才根据下载源设置默认值
 if [ -z "$REPO_BASE_URL" ]; then
@@ -40,7 +40,7 @@ check_updates() {
     source "$CONFIG_DIR/version.conf"
     
     # 获取远程版本信息
-    local remote_version_content=$(curl -s "$REMOTE_VERSION_URL")
+    local remote_version_content=$(curl -s --connect-timeout 10 --max-time 15 "$REMOTE_VERSION_URL")
     local remote_version=$(echo "$remote_version_content" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
     
     # 检查是否成功获取远程版本
@@ -75,7 +75,7 @@ check_module_updates() {
     echo_color $BLUE "检查模块更新..."
     
     # 获取远程模块列表
-    local remote_modules_list=$(curl -s "$REMOTE_MODULES_URL")
+    local remote_modules_list=$(curl -s --connect-timeout 10 --max-time 15 "$REMOTE_MODULES_URL")
     if [ -z "$remote_modules_list" ]; then
         echo_color $RED "无法获取远程模块列表"
         return 1
@@ -126,7 +126,7 @@ update_tool() {
     cp "$SCRIPT_DIR/hanxi.sh" "$SCRIPT_DIR/hanxi.sh.bak"
     
     # 下载新版本
-    if curl -s "$REPO_BASE_URL/hanxi.sh" -o "$SCRIPT_DIR/hanxi.sh.new"; then
+    if curl -s --connect-timeout 10 --max-time 15 "$REPO_BASE_URL/hanxi.sh" -o "$SCRIPT_DIR/hanxi.sh.new"; then
         # 验证新版本 - 检查文件是否包含bash脚本特征
         if head -n 3 "$SCRIPT_DIR/hanxi.sh.new" | grep -q "#!/bin/bash" || \
            head -n 10 "$SCRIPT_DIR/hanxi.sh.new" | grep -q "hanxi"; then
@@ -134,7 +134,7 @@ update_tool() {
             chmod +x "$SCRIPT_DIR/hanxi.sh"
             
             # 更新版本配置
-            curl -s "$REMOTE_VERSION_URL" -o "$CONFIG_DIR/version.conf"
+            curl -s --connect-timeout 10 --max-time 15 "$REMOTE_VERSION_URL" -o "$CONFIG_DIR/version.conf"
             
             echo_color $GREEN "更新成功! 请重新启动脚本"
             exit 0
@@ -196,7 +196,7 @@ download_module() {
     fi
     
     # 尝试下载新模块
-    if curl -s "$module_url" -o "$MODULES_DIR/$module_file.tmp"; then
+    if curl -s --connect-timeout 10 --max-time 15 "$module_url" -o "$MODULES_DIR/$module_file.tmp"; then
         # 验证模块文件 - 检查是否为有效的bash脚本
         if head -n 3 "$MODULES_DIR/$module_file.tmp" | grep -q "#!/bin/bash" || \
            head -n 5 "$MODULES_DIR/$module_file.tmp" | grep -q "#.*模块"; then
