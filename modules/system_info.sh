@@ -354,12 +354,6 @@ main() {
     
     # 执行系统信息查询
     system_info_query
-    
-    # 等待用户按键返回
-    echo ""
-    echo -n "按任意键返回主菜单..."
-    read -n 1 -s -r
-    echo
 }
 
 # 模块信息函数
