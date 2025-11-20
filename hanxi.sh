@@ -189,9 +189,6 @@ show_help() {
     echo "您也可以通过菜单选项或直接运行 './hanxi.sh --update' 手动检查更新。"
     echo "支持的下载源: GitHub、自定义域名、Gitee"
     echo ""
-    echo -n "按任意键返回..."
-    read -n 1 -s -r
-    echo
 }
 
 # 主循环
