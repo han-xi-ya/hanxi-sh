@@ -110,11 +110,13 @@ system_info_query() {
 
     # 获取网络接口信息
     get_network_interfaces() {
-        interfaces=$(ip link show | grep -E '^[0-9]+:' | awk -F': ' '{print $2}' | grep -v lo)
+        interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo)
         interface_info=""
         for iface in $interfaces; do
-            ipv4=$(ip addr show $iface | grep -E 'inet (192\.168|10\.|172\.)' | awk '{print $2}' | head -n1)
-            ipv6=$(ip addr show $iface | grep inet6 | grep -v ::1/128 | awk '{print $2}' | head -n1)
+            # 一次性获取所有接口信息
+            interface_data=$(ip addr show $iface 2>/dev/null)
+            ipv4=$(echo "$interface_data" | grep -E 'inet (192\.168|10\.|172\.)' | awk '{print $2}' | head -n1)
+            ipv6=$(echo "$interface_data" | grep inet6 | grep -v ::1/128 | awk '{print $2}' | head -n1)
             mac=$(ip link show $iface | grep -oE 'link/ether [0-9a-f:]+' | awk '{print $2}')
             if [ -n "$ipv4" ] || [ -n "$ipv6" ]; then
                 interface_info+="\n${CYAN}$iface${RESET}"
@@ -132,8 +134,9 @@ system_info_query() {
 
     # 获取连接统计
     get_connection_stats() {
-        tcp_count=$(ss -t | wc -l)
-        udp_count=$(ss -u | wc -l)
+        local ss_output=$(ss -tun 2>/dev/null)
+        tcp_count=$(echo "$ss_output" | grep -c ' tcp')
+        udp_count=$(echo "$ss_output" | grep -c ' udp')
     }
 
     # 获取流量统计
@@ -167,7 +170,7 @@ system_info_query() {
 
     # 获取进程统计信息
     get_process_stats() {
-        local ps_output=$(ps -e -o pid,comm,stat,%cpu,%mem)
+        local ps_output=$(ps -e -o pid,comm,stat,%cpu,%mem --no-headers)
         total_processes=$(echo "$ps_output" | wc -l)
         running_processes=$(echo "$ps_output" | grep -c ' R')
         sleeping_processes=$(echo "$ps_output" | grep -c ' S')
