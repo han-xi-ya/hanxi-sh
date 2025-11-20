@@ -92,7 +92,8 @@ show_main_menu() {
     
     local i=1
     for module in "${MODULES[@]}"; do
-        IFS=':' read -r module_file module_name module_desc <<< "$module"
+        # 正确解析模块配置：模块文件名:显示名称:描述:版本号
+        IFS=':' read -r module_file module_name module_desc module_version <<< "$module"
         echo_color $BLUE "$i. $module_name"
         echo_color $CYAN "   └─ $module_desc"
         ((i++))
@@ -214,7 +215,7 @@ main() {
                     sleep 1
                     continue
                 fi
-                read -e -p "按任意键返回主菜单..." -n 1
+                read -e -p "按任意键返回主菜单..." -n 1 -r
                 ;;
             0)
                 echo_color $GREEN "感谢使用，再见！"

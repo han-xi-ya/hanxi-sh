@@ -145,11 +145,29 @@ update_all_modules() {
     
     # 获取远程模块列表
     local remote_modules_list=$(curl -s "$REMOTE_MODULES_URL")
+    if [ -z "$remote_modules_list" ]; then
+        echo_color $RED "无法获取远程模块列表"
+        return 1
+    fi
+    
+    # 正确解析远程模块列表 - 只提取有效的模块行
     declare -a remote_modules
     while IFS= read -r line; do
-        [[ "$line" =~ ^# ]] || [[ -z "$line" ]] && continue
-        remote_modules+=("$line")
+        # 跳过注释行、空行和配置行（MODULES=等）
+        [[ "$line" =~ ^# ]] && continue
+        [[ -z "$line" ]] && continue
+        [[ "$line" =~ ^MODULES ]] && continue
+        [[ "$line" =~ ^[[:space:]]*"[^:]+:[^:]+:[^:]+:[^:]+"[[:space:]]*$ ]] || continue
+        
+        # 清理引号和空格
+        local clean_line=$(echo "$line" | sed 's/^[[:space:]]*"//' | sed 's/"[[:space:]]*$//')
+        remote_modules+=("$clean_line")
     done <<< "$remote_modules_list"
+    
+    if [ ${#remote_modules[@]} -eq 0 ]; then
+        echo_color $RED "未找到有效的模块配置"
+        return 1
+    fi
     
     # 更新配置文件
     echo "# 模块配置文件" > "$CONFIG_DIR/modules.list"
@@ -167,7 +185,11 @@ update_all_modules() {
     # 下载所有模块
     for module in "${remote_modules[@]}"; do
         IFS=':' read -r module_file module_name module_desc module_version <<< "$module"
-        download_module "$module_file"
+        if [ -n "$module_file" ]; then
+            download_module "$module_file"
+        else
+            echo_color $RED "无效的模块格式: $module"
+        fi
     done
     
     echo_color $GREEN "所有模块更新完成!"
