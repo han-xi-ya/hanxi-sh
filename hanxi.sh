@@ -226,25 +226,6 @@ main() {
     done
 }
 
-
-        case $1 in
-            --repo-url|-r)
-                REPO_BASE_URL="$2"
-                shift 2
-                ;;
-            --help|-h)
-                show_help
-                exit 0
-                ;;
-            *)
-                echo_color $RED "未知参数: $1"
-                echo_color $YELLOW "使用 --help 获取帮助"
-                exit 1
-                ;;
-        esac
-    done
-}
-
 # 启动脚本
 trap cleanup EXIT
 main

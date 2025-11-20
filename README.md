@@ -17,7 +17,7 @@
 ### 一键安装
 
 ```bash
-curl -sL https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main/install.sh | bash
+bash <(curl -sL https://raw.githubusercontent.com/han-xi-ya/hanxi-sh/main/install.sh)
 ```
 
 ### 手动安装
