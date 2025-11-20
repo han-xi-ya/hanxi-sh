@@ -36,14 +36,17 @@ REMOTE_MODULES_DIR="$REPO_BASE_URL/modules"
 check_updates() {
     echo_color $BLUE "正在检查更新..."
     
+    # 重新加载版本配置确保变量正确
+    source "$CONFIG_DIR/version.conf"
+    
     # 获取远程版本信息
     local remote_version_content=$(curl -s "$REMOTE_VERSION_URL")
     local remote_version=$(echo "$remote_version_content" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
     
     # 检查是否成功获取远程版本
     if [ -z "$remote_version" ] || [ "$remote_version" = "1.0.0" ]; then
-        echo_color $YELLOW "无法获取有效的远程版本信息"
-        echo_color $GREEN "当前版本: $TOOL_VERSION (已是最新)"
+        echo_color $YELLOW "无法获取远程版本信息"
+        echo_color $GREEN "使用本地版本: $TOOL_VERSION"
         check_module_updates
         return 0
     fi

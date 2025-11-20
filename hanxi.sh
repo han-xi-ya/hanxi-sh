@@ -189,7 +189,9 @@ show_help() {
     echo "您也可以通过菜单选项或直接运行 './hanxi.sh --update' 手动检查更新。"
     echo "支持的下载源: GitHub、自定义域名、Gitee"
     echo ""
-    read -n 1 -s -r -p "按任意键返回..."
+    echo -n "按任意键返回..."
+    read -n 1 -s -r
+    echo
 }
 
 # 主循环
@@ -221,7 +223,9 @@ main() {
                     sleep 1
                     continue
                 fi
-                read -e -p "按任意键返回主菜单..." -n 1 -r
+                echo -n "按任意键返回主菜单..."
+                read -n 1 -s -r
+                echo
                 ;;
             0)
                 echo_color $GREEN "感谢使用，再见！"
