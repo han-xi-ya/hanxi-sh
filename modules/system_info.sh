@@ -6,7 +6,7 @@
 
 # 模块配置
 MODULE_NAME="系统信息查询"
-MODULE_VERSION="1.0.0"
+MODULE_VERSION="1.0.1"
 MODULE_DESC="完整的系统硬件和软件信息查询"
 
 # 颜色定义
@@ -112,21 +112,19 @@ system_info_query() {
 
     # 获取网络接口信息
     get_network_interfaces() {
-        interfaces=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo)
+        # 简化网络接口信息获取，避免延迟
         interface_info=""
-        for iface in $interfaces; do
-            # 一次性获取所有接口信息
-            interface_data=$(ip addr show $iface 2>/dev/null)
-            ipv4=$(echo "$interface_data" | grep -E 'inet (192\.168|10\.|172\.)' | awk '{print $2}' | head -n1)
-            ipv6=$(echo "$interface_data" | grep inet6 | grep -v ::1/128 | awk '{print $2}' | head -n1)
-            mac=$(ip link show $iface | grep -oE 'link/ether [0-9a-f:]+' | awk '{print $2}')
-            if [ -n "$ipv4" ] || [ -n "$ipv6" ]; then
-                interface_info+="\n${CYAN}$iface${RESET}"
-                [ -n "$mac" ] && interface_info+=" MAC: $mac"
-                [ -n "$ipv4" ] && interface_info+=" IPv4: $ipv4"
-                [ -n "$ipv6" ] && interface_info+=" IPv6: $ipv6"
+        # 只显示主要网络接口，避免处理过多接口
+        while read line; do
+            iface=$(echo "$line" | awk -F': ' '{print $2}')
+            ip_info=$(echo "$line" | awk '{for(i=4;i<=NF;i++) printf "%s ", $i}')
+            
+            if [ -n "$ip_info" ]; then
+                # 获取MAC地址
+                mac=$(ip -o link show "$iface" 2>/dev/null | grep -oE 'link/ether [0-9a-f:]+' | awk '{print $2}')
+                interface_info+="\n${CYAN}$iface${RESET} MAC: ${mac:-N/A} IP: $ip_info"
             fi
-        done
+        done < <(ip -o addr show 2>/dev/null | grep -E '(eth|ens|enp|wlan|wlp)' | head -5)
     }
 
     # 获取DNS信息
