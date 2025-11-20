@@ -143,8 +143,9 @@ execute_module() {
 
 # 清理函数
 cleanup() {
-    unset MODULES
     echo_color $GREEN "清理完成"
+    # 重新加载模块配置
+    source "$CONFIG_DIR/modules.list"
 }
 
 # 显示帮助文档
