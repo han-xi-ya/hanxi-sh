@@ -117,8 +117,9 @@ update_tool() {
     
     # 下载新版本
     if curl -s "$REPO_BASE_URL/hanxi.sh" -o "$SCRIPT_DIR/hanxi.sh.new"; then
-        # 验证新版本
-        if head -n 10 "$SCRIPT_DIR/hanxi.sh.new" | grep -q "hanxi"; then
+        # 验证新版本 - 检查文件是否包含bash脚本特征
+        if head -n 3 "$SCRIPT_DIR/hanxi.sh.new" | grep -q "#!/bin/bash" || \
+           head -n 10 "$SCRIPT_DIR/hanxi.sh.new" | grep -q "hanxi"; then
             mv "$SCRIPT_DIR/hanxi.sh.new" "$SCRIPT_DIR/hanxi.sh"
             chmod +x "$SCRIPT_DIR/hanxi.sh"
             
@@ -192,8 +193,9 @@ download_module() {
     
     # 下载新模块
     if curl -s "$module_url" -o "$MODULES_DIR/$module_file.tmp"; then
-        # 验证模块文件
-        if head -n 3 "$MODULES_DIR/$module_file.tmp" | grep -q "#!/bin/bash"; then
+        # 验证模块文件 - 更宽松的验证条件
+        if head -n 3 "$MODULES_DIR/$module_file.tmp" | grep -q "#!/bin/bash" || \
+           head -n 5 "$MODULES_DIR/$module_file.tmp" | grep -q "#.*模块"; then
             mv "$MODULES_DIR/$module_file.tmp" "$MODULES_DIR/$module_file"
             chmod +x "$MODULES_DIR/$module_file"
             rm -f "$MODULES_DIR/$module_file.bak"
