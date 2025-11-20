@@ -26,6 +26,11 @@ case $source_choice in
         ;;
 esac
 
+# 修改默认下载源为Gitee
+if [ -z "$BASE_URL" ]; then
+    BASE_URL="https://gitee.com/han-xi-ya/hanxi-sh/raw/main"
+fi
+
 echo "正在安装系统管理工具... (源: $BASE_URL)"
 mkdir -p hanxi-sh
 cd hanxi-sh
