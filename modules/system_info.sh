@@ -32,8 +32,8 @@ check_command() {
 system_info_query() {
     # 获取公网IP和内网IP
     ip_address() {
-        ipv4_address=$(curl -s4 --connect-timeout 2 ip.sb 2>/dev/null || curl -s4 --connect-timeout 2 icanhazip.com 2>/dev/null || echo "无法获取")
-        ipv6_address=$(curl -s6 --connect-timeout 2 ip.sb 2>/dev/null || curl -s6 --connect-timeout 2 icanhazip.com 2>/dev/null || echo "无法获取")
+        ipv4_address=$(curl -s4 --connect-timeout 1 --max-time 2 ip.sb 2>/dev/null || curl -s4 --connect-timeout 1 --max-time 2 icanhazip.com 2>/dev/null || echo "无法获取")
+        ipv6_address=$(curl -s6 --connect-timeout 1 --max-time 2 ip.sb 2>/dev/null || curl -s6 --connect-timeout 1 --max-time 2 icanhazip.com 2>/dev/null || echo "无法获取")
         local_ipv4=$(ip addr | grep -E 'inet (192\.168|10\.|172\.)' | grep -v 127.0.0.1 | head -n1 | awk '{print $2}' | cut -d'/' -f1)
         local_ipv6=$(ip addr | grep inet6 | grep -v ::1/128 | head -n1 | awk '{print $2}' | cut -d'/' -f1)
     }
@@ -41,7 +41,7 @@ system_info_query() {
     # 获取运营商信息
     get_isp_info() {
         if [ "$ipv4_address" != "无法获取" ]; then
-            isp_info=$(curl -s --connect-timeout 2 "http://ip-api.com/json/$ipv4_address?fields=isp,org" | \
+            isp_info=$(curl -s --connect-timeout 1 --max-time 2 "http://ip-api.com/json/$ipv4_address?fields=isp,org" | \
                 python3 -c "import json,sys; data=json.load(sys.stdin); print(data.get('isp', '未知'), data.get('org', ''))" 2>/dev/null || \
                 echo "未知运营商")
         else
@@ -52,7 +52,7 @@ system_info_query() {
     # 获取地理位置
     get_geo_info() {
         if [ "$ipv4_address" != "无法获取" ]; then
-            geo_info=$(curl -s --connect-timeout 2 "http://ip-api.com/json/$ipv4_address?fields=country,regionName,city" | \
+            geo_info=$(curl -s --connect-timeout 1 --max-time 2 "http://ip-api.com/json/$ipv4_address?fields=country,regionName,city" | \
                 python3 -c "import json,sys; data=json.load(sys.stdin); print(f\"{data.get('country', '')} {data.get('regionName', '')} {data.get('city', '')}\")" 2>/dev/null || \
                 echo "未知位置")
         else
@@ -167,14 +167,15 @@ system_info_query() {
 
     # 获取进程统计信息
     get_process_stats() {
-        total_processes=$(ps -e | wc -l)
-        running_processes=$(ps -e -o stat | grep -c 'R')
-        sleeping_processes=$(ps -e -o stat | grep -c 'S')
-        stopped_processes=$(ps -e -o stat | grep -c 'T')
-        zombie_processes=$(ps -e -o stat | grep -c 'Z')
-        total_threads=$(ps -eL | wc -l)
-        top_cpu_process=$(ps -eo pid,comm,%cpu --sort=-%cpu | head -n 2 | tail -n 1 | awk '{printf "PID:%s %s CPU:%s%%", $1, $2, $3}')
-        top_mem_process=$(ps -eo pid,comm,%mem --sort=-%mem | head -n 2 | tail -n 1 | awk '{printf "PID:%s %s MEM:%s%%", $1, $2, $3}')
+        local ps_output=$(ps -e -o pid,comm,stat,%cpu,%mem)
+        total_processes=$(echo "$ps_output" | wc -l)
+        running_processes=$(echo "$ps_output" | grep -c ' R')
+        sleeping_processes=$(echo "$ps_output" | grep -c ' S')
+        stopped_processes=$(echo "$ps_output" | grep -c ' T')
+        zombie_processes=$(echo "$ps_output" | grep -c ' Z')
+        total_threads=$(ps -eL 2>/dev/null | wc -l || echo "$total_processes")
+        top_cpu_process=$(echo "$ps_output" | sort -k4 -nr | head -n 1 | awk '{printf "PID:%s %s CPU:%s%%", $1, $2, $4}')
+        top_mem_process=$(echo "$ps_output" | sort -k5 -nr | head -n 1 | awk '{printf "PID:%s %s MEM:%s%%", $1, $2, $5}')
     }
 
     # 获取安全状态信息
