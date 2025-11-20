@@ -113,7 +113,6 @@ show_main_menu() {
     
     echo_color $BLUE "$i. 清理缓存"
     echo_color $CYAN "   └─ 清理工具缓存"
-    ((i++))
     
     echo_color $GREEN "================================================"
     echo_color $YELLOW "0. 退出"
@@ -197,18 +196,21 @@ main() {
         
         case "$choice" in
             [1-9]*)
-                if [ "$choice" -ge 1 ] && [ "$choice" -le "${#MODULES[@]}" ]; then
+                local module_count=${#MODULES[@]}
+                local total_options=$((module_count + 4))  # 模块数 + 4个系统选项
+                
+                if [ "$choice" -ge 1 ] && [ "$choice" -le "$module_count" ]; then
                     execute_module $((choice-1))
-                elif [ "$choice" -eq $(( ${#MODULES[@]} + 1 )) ]; then
+                elif [ "$choice" -eq $((module_count + 1)) ]; then
                     show_help
-                elif [ "$choice" -eq $(( ${#MODULES[@]} + 2 )) ]; then
+                elif [ "$choice" -eq $((module_count + 2)) ]; then
                     check_updates
-                elif [ "$choice" -eq $(( ${#MODULES[@]} + 3 )) ]; then
+                elif [ "$choice" -eq $((module_count + 3)) ]; then
                     force_update_all
-                elif [ "$choice" -eq $(( ${#MODULES[@]} + 4 )) ]; then
+                elif [ "$choice" -eq $((module_count + 4)) ]; then
                     cleanup
                 else
-                    echo_color $RED "无效的选择!"
+                    echo_color $RED "无效的选择! 请输入 0-$total_options 之间的数字"
                     sleep 1
                     continue
                 fi
@@ -219,7 +221,7 @@ main() {
                 exit 0
                 ;;
             *)
-                echo_color $RED "无效的选择!"
+                echo_color $RED "无效的选择! 请输入数字"
                 sleep 1
                 ;;
         esac
