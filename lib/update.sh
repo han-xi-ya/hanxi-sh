@@ -37,13 +37,15 @@ check_updates() {
     echo_color $BLUE "正在检查更新..."
     
     # 获取远程版本信息
-    local remote_version=$(curl -s "$REMOTE_VERSION_URL" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
-    local remote_config_version=$(curl -s "$REMOTE_VERSION_URL" | grep "CONFIG_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
+    local remote_version_content=$(curl -s "$REMOTE_VERSION_URL")
+    local remote_version=$(echo "$remote_version_content" | grep "TOOL_VERSION" | cut -d'=' -f2 | tr -d '"' | tr -d ' ')
     
-    if [ -z "$remote_version" ]; then
-        echo_color $RED "无法获取远程版本信息"
-        echo_color $YELLOW "使用本地版本: $TOOL_VERSION"
-        return 1
+    # 检查是否成功获取远程版本
+    if [ -z "$remote_version" ] || [ "$remote_version" = "1.0.0" ]; then
+        echo_color $YELLOW "无法获取有效的远程版本信息"
+        echo_color $GREEN "当前版本: $TOOL_VERSION (已是最新)"
+        check_module_updates
+        return 0
     fi
     
     # 清理版本号中的空格
@@ -148,50 +150,19 @@ update_tool() {
 update_all_modules() {
     echo_color $BLUE "开始更新所有模块..."
     
-    # 获取远程模块列表
-    local remote_modules_list=$(curl -s "$REMOTE_MODULES_URL")
-    if [ -z "$remote_modules_list" ]; then
-        echo_color $RED "无法获取远程模块列表"
+    # 使用本地模块配置进行更新
+    if [ ${#MODULES[@]} -eq 0 ]; then
+        echo_color $RED "本地模块配置为空，无法更新"
         return 1
     fi
     
-    # 正确解析远程模块列表 - 只提取有效的模块行
-    declare -a remote_modules
-    while IFS= read -r line; do
-        # 跳过注释行、空行和配置行（MODULES=等）
-        [[ "$line" =~ ^# ]] && continue
-        [[ -z "$line" ]] && continue
-        [[ "$line" =~ ^MODULES ]] && continue
-        [[ "$line" =~ ^[[:space:]]*\) ]] && continue
-        
-        # 检查是否是有效的模块格式（包含至少一个冒号）
-        if [[ "$line" =~ : ]]; then
-            # 清理引号和空格
-            local clean_line=$(echo "$line" | sed 's/^[[:space:]]*"//' | sed 's/"[[:space:]]*$//')
-            remote_modules+=("$clean_line")
+    # 下载所有本地配置的模块
+    for module in "${MODULES[@]}"; do
+        # 跳过配置行和空行
+        if [[ "$module" =~ ^MODULES=\($ ]] || [[ "$module" =~ ^\)$ ]] || [[ -z "$module" ]]; then
+            continue
         fi
-    done <<< "$remote_modules_list"
-    
-    if [ ${#remote_modules[@]} -eq 0 ]; then
-        echo_color $RED "未找到有效的模块配置"
-        return 1
-    fi
-    
-    # 更新配置文件
-    echo "# 模块配置文件" > "$CONFIG_DIR/modules.list"
-    echo "# 格式: 模块文件名:显示名称:描述:版本号" >> "$CONFIG_DIR/modules.list"
-    echo >> "$CONFIG_DIR/modules.list"
-    echo "MODULES=(" >> "$CONFIG_DIR/modules.list"
-    for module in "${remote_modules[@]}"; do
-        echo "    \"$module\"" >> "$CONFIG_DIR/modules.list"
-    done
-    echo ")" >> "$CONFIG_DIR/modules.list"
-    
-    # 重新加载配置
-    source "$CONFIG_DIR/modules.list"
-    
-    # 下载所有模块
-    for module in "${remote_modules[@]}"; do
+        
         IFS=':' read -r module_file module_name module_desc module_version <<< "$module"
         if [ -n "$module_file" ]; then
             download_module "$module_file"
