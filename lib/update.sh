@@ -190,30 +190,36 @@ download_module() {
     
     echo_color $BLUE "下载模块: $module_file"
     
-    # 备份现有模块
+    # 备份现有模块（如果存在）
     if [ -f "$MODULES_DIR/$module_file" ]; then
         cp "$MODULES_DIR/$module_file" "$MODULES_DIR/$module_file.bak"
     fi
     
-    # 下载新模块
+    # 尝试下载新模块
     if curl -s "$module_url" -o "$MODULES_DIR/$module_file.tmp"; then
-        # 验证模块文件 - 更宽松的验证条件
+        # 验证模块文件 - 检查是否为有效的bash脚本
         if head -n 3 "$MODULES_DIR/$module_file.tmp" | grep -q "#!/bin/bash" || \
            head -n 5 "$MODULES_DIR/$module_file.tmp" | grep -q "#.*模块"; then
             mv "$MODULES_DIR/$module_file.tmp" "$MODULES_DIR/$module_file"
             chmod +x "$MODULES_DIR/$module_file"
             rm -f "$MODULES_DIR/$module_file.bak"
-            echo_color $GREEN "模块更新成功: $module_file"
+            echo_color $GREEN "模块下载成功: $module_file"
         else
             echo_color $RED "下载的模块文件无效: $module_file"
-            # 恢复备份
+            # 恢复备份（如果存在）
             if [ -f "$MODULES_DIR/$module_file.bak" ]; then
                 mv "$MODULES_DIR/$module_file.bak" "$MODULES_DIR/$module_file"
+                echo_color $YELLOW "已恢复备份模块: $module_file"
             fi
             rm -f "$MODULES_DIR/$module_file.tmp"
         fi
     else
         echo_color $RED "下载失败: $module_file"
+        # 恢复备份（如果存在）
+        if [ -f "$MODULES_DIR/$module_file.bak" ]; then
+            mv "$MODULES_DIR/$module_file.bak" "$MODULES_DIR/$module_file"
+            echo_color $YELLOW "已恢复备份模块: $module_file"
+        fi
         rm -f "$MODULES_DIR/$module_file.tmp"
     fi
 }
